@@ -19,6 +19,7 @@
 #include "game.h"
 #include "card.h"
 #include "rule.h"
+#include "score.h"
 
 #include <ctype.h>
 #include <stdlib.h>
@@ -261,6 +262,20 @@ bool game_init(
     const char names[][MAX_NAME_LEN]
 )
 {
+    /* 預設為多人模式，所有玩家皆為人類。 */
+    bool no_ai[MAX_PLAYERS] = {false};
+    return game_init_with_mode(game, player_count, names,
+                               MODE_MULTIPLAYER, no_ai);
+}
+
+bool game_init_with_mode(
+    GameState *game,
+    int player_count,
+    const char names[][MAX_NAME_LEN],
+    GameMode mode,
+    const bool *is_ai
+)
+{
     if (game == NULL || !player_names_are_valid(player_count, names)) {
         return false;
     }
@@ -274,18 +289,26 @@ bool game_init(
     game->last_player_connected_goal = NO_PLAYER;
     game->last_action_player = NO_PLAYER;
     game->phase = PHASE_SETUP;
+    game->mode = mode;
+    game->winner_is_gold_diggers = false;
 
     for (int i = 0; i < player_count; ++i) {
         (void)strncpy(game->players[i].name, names[i], MAX_NAME_LEN - 1);
         game->players[i].name[MAX_NAME_LEN - 1] = '\0';
         game->players[i].gold_total = 0;
+        game->is_ai[i] = (is_ai != NULL) ? is_ai[i] : false;
     }
+
+    score_initialize_gold_deck(game);
 
     /*
      * 名稱確認後，只在整局開始時隨機決定一次順序。
-     * 後續保持此循環順序，每輪將 starting_player 往下一人輪替。
+     * 為了讓人機模式中人類玩家有可預期的位置（players[0]），
+     * 人機模式不打亂玩家順序；多人模式才打亂。
      */
-    shuffle_players(game->players, game->player_count);
+    if (mode == MODE_MULTIPLAYER) {
+        shuffle_players(game->players, game->player_count);
+    }
 
     return game_setup_round(game);
 }

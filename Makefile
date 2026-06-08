@@ -1,13 +1,15 @@
-CC := gcc
-CFLAGS := -std=c11 -Wall -Wextra -Wpedantic -Werror -I.
+CC      := gcc
+CFLAGS  := -std=c11 -Wall -Wextra -Wpedantic -I. $(shell sdl2-config --cflags) -D_REENTRANT
+LDFLAGS := $(shell sdl2-config --libs) -lSDL2_ttf
 CORE := game.c card.c rule.c score.c
+UI := main.c render.c extras.c
 
 .PHONY: all run test clean
 
 all: saboteur
 
-saboteur: main.c $(CORE) game.h card.h rule.h score.h
-	$(CC) $(CFLAGS) main.c $(CORE) -o $@
+saboteur: $(UI) $(CORE) game.h card.h rule.h score.h render.h extras.h
+	$(CC) $(CFLAGS) $(UI) $(CORE) -o $@ $(LDFLAGS)
 
 run: saboteur
 	./saboteur
@@ -22,8 +24,8 @@ test: test_card_build test_game_setup test_path_connection test_score test_sabot
 test_card_build: test_card_build.c card.c game.h card.h
 	$(CC) $(CFLAGS) test_card_build.c card.c -o $@
 
-test_game_setup: test_game_setup.c game.c card.c rule.c game.h card.h rule.h
-	$(CC) $(CFLAGS) test_game_setup.c game.c card.c rule.c -o $@
+test_game_setup: test_game_setup.c game.c card.c rule.c score.c game.h card.h rule.h score.h
+	$(CC) $(CFLAGS) test_game_setup.c game.c card.c rule.c score.c -o $@
 
 test_path_connection: test_path_connection.c rule.c card.c game.h card.h rule.h
 	$(CC) $(CFLAGS) test_path_connection.c rule.c card.c -o $@

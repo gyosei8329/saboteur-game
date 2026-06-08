@@ -81,6 +81,12 @@ static bool is_in_board(int row, int col)
     return row >= 0 && row < BOARD_H && col >= 0 && col < BOARD_W;
 }
 
+static bool is_in_play_area(int row, int col)
+{
+    return row >= PLAY_AREA_ROW_MIN && row < PLAY_AREA_ROW_MAX
+        && col >= PLAY_AREA_COL_MIN && col < PLAY_AREA_COL_MAX;
+}
+
 static bool is_tool_valid(ToolType tool)
 {
     return tool == TOOL_PICKAXE
@@ -354,6 +360,10 @@ bool is_valid_path_placement(
     }
     if (!is_in_board(row, col)) {
         set_reason(reason, reason_size, "放置位置超出版圖範圍。");
+        return false;
+    }
+    if (!is_in_play_area(row, col)) {
+        set_reason(reason, reason_size, "放置位置不在 9x5 場地內。");
         return false;
     }
     if (game->board[row][col].occupied) {

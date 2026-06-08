@@ -66,6 +66,7 @@ int main(void)
         game.round_number == 1
         && game.phase == PHASE_ROLE_CHECK
         && game.role_pool_count == 6
+        && game.gold_draw_count == GOLD_DECK_COUNT
         && game.draw_count == BASE_PLAY_DECK_COUNT - 5 * 6
         && hands_are_valid
         && initial_board_is_valid(&game);
@@ -92,6 +93,7 @@ int main(void)
         && game.phase == PHASE_ROLE_CHECK
         && game.starting_player == (first_round_starter + 1) % 5
         && game.players[0].gold_total == 3
+        && game.gold_draw_count == GOLD_DECK_COUNT
         && initial_board_is_valid(&game);
 
     game.round_number = 3;

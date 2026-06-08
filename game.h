@@ -30,6 +30,14 @@
 #define BOARD_H            25
 #define GOAL_CARD_COUNT    3
 
+/* 可放牌場地：起點到三張終點所在的 9 x 5 網格。 */
+#define PLAY_AREA_ROW_MIN  10
+#define PLAY_AREA_ROW_MAX  15
+#define PLAY_AREA_COL_MIN  2
+#define PLAY_AREA_COL_MAX  11
+#define PLAY_AREA_ROWS     (PLAY_AREA_ROW_MAX - PLAY_AREA_ROW_MIN)
+#define PLAY_AREA_COLS     (PLAY_AREA_COL_MAX - PLAY_AREA_COL_MIN)
+
 /*
  * 基礎版玩法牌的實際數量會在 card.c 建立牌組時設定。
  * 第一版保留 80 格，可涵蓋完整玩法牌並保留少量測試空間。
@@ -78,6 +86,13 @@ typedef enum {
     PHASE_ROUND_RESULT,     /* 本輪角色公開與金塊結算 */
     PHASE_GAME_RESULT       /* 三輪完成，總分與勝者畫面 */
 } GamePhase;
+
+/* ---------- 遊戲模式 ---------- */
+
+typedef enum {
+    MODE_AI = 0,            /* 人機模式：1 名人類 + 2 名 AI */
+    MODE_MULTIPLAYER        /* 多人模式：3 到 10 名人類玩家 */
+} GameMode;
 
 /* ---------- 卡牌型別 ---------- */
 
@@ -212,6 +227,19 @@ typedef struct {
     int starting_player;          /* 本輪起始玩家 */
     GamePhase phase;
 
+    /*
+     * mode：人機 vs 多人。
+     * is_ai[i]：第 i 位玩家是否由 AI 控制（多人模式時全為 false）。
+     */
+    GameMode mode;
+    bool is_ai[MAX_PLAYERS];
+
+    /*
+     * winner_is_gold_diggers：遊戲結束時，礦工方是否獲勝。
+     * 只有 phase == PHASE_GAME_RESULT 時有效。
+     */
+    bool winner_is_gold_diggers;
+
     Player players[MAX_PLAYERS];
 
     /*
@@ -288,6 +316,18 @@ bool game_init(
     GameState *game,
     int player_count,
     const char names[][MAX_NAME_LEN]
+);
+
+/**
+ * 帶有遊戲模式的初始化。is_ai 為長度 player_count 的陣列，
+ * 標記哪些玩家由 AI 控制。
+ */
+bool game_init_with_mode(
+    GameState *game,
+    int player_count,
+    const char names[][MAX_NAME_LEN],
+    GameMode mode,
+    const bool *is_ai
 );
 
 /**

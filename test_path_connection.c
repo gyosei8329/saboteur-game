@@ -62,6 +62,9 @@ int main(void)
     bool extend_from_start = is_valid_path_placement(
         &game, horizontal, 12, 3, reason, sizeof(reason)
     );
+    bool outside_play_area_is_rejected = !is_valid_path_placement(
+        &game, horizontal, 12, 1, reason, sizeof(reason)
+    );
 
     put_path(&game, 12, 3, horizontal);
     bool wall_touch_only_is_rejected = !is_valid_path_placement(
@@ -84,6 +87,8 @@ int main(void)
     );
 
     printf("extend from start: %s\n", extend_from_start ? "PASS" : "FAIL");
+    printf("outside 9x5 area rejected: %s\n",
+           outside_play_area_is_rejected ? "PASS" : "FAIL");
     printf("wall-only adjacency rejected: %s\n",
            wall_touch_only_is_rejected ? "PASS" : "FAIL");
     printf("isolated extension rejected: %s\n",
@@ -94,6 +99,7 @@ int main(void)
            attached_dead_end_is_allowed ? "PASS" : "FAIL");
 
     return (extend_from_start
+            && outside_play_area_is_rejected
             && wall_touch_only_is_rejected
             && isolated_extension_is_rejected
             && continued_real_path_is_allowed
